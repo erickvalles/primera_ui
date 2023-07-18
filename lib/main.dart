@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import './detail_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,10 +38,17 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Two Panel App'),
+        title: Text('Historial de cálculos'),
       ),
       body: Row(
         children: [
+          IconButton(
+            onPressed: () {
+              setState(() {
+                items.add("value");
+              });
+            },
+            icon: Icon(Icons.add)),
           Expanded(
             child: ListView.builder(
               itemCount: items.length,
@@ -76,21 +84,3 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class DetailPage extends StatelessWidget {
-  final String item;
-
-  DetailPage({required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Center(
-        child: Text(
-          item,
-          style: TextStyle(fontSize: 18),
-        ),
-      ),
-    );
-  }
-}
