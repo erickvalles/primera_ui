@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Historial de cálculos'),
+        title: const Text('Historial de cálculos'),
       ),
       body: Row(
         children: [
@@ -48,7 +48,7 @@ class _HomePageState extends State<HomePage> {
                 items.add("value");
               });
             },
-            icon: Icon(Icons.add)),
+            icon: const Icon(Icons.add)),
           Expanded(
             child: ListView.builder(
               itemCount: items.length,
@@ -70,7 +70,7 @@ class _HomePageState extends State<HomePage> {
                 ? DetailPage(item: items[selectedItemIndex])
                 : Container(
                     color: Colors.grey,
-                    child: Center(
+                    child: const Center(
                       child: Text(
                         'No item selected',
                         style: TextStyle(fontSize: 18),

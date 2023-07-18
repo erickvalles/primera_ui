@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 class DetailPage extends StatefulWidget {
   final String item;
 
-  DetailPage({required this.item});
+  const DetailPage({super.key, required this.item});
 
   @override
   State<DetailPage> createState() => _DetailPageState();
@@ -16,7 +16,7 @@ class _DetailPageState extends State<DetailPage> {
       child: Center(
         child: Text(
           widget.item,
-          style: TextStyle(fontSize: 18),
+          style: const TextStyle(fontSize: 18),
         ),
       ),
     );
