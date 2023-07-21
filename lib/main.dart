@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import './detail_page.dart';
+import 'util/database.dart';
+import 'dao/calculo_dao.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  final database =
+      await $FloorAppDatabase.databaseBuilder("calculos.db").build();
+  final calculoDao = database.calculoDao;
+  runApp(MyApp(calculoDao));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final CalculoDao calculoDao;
+  const MyApp(this.calculoDao);
 
   @override
   Widget build(BuildContext context) {
@@ -16,15 +22,16 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         primarySwatch: Colors.blue,
       ),
-      home: const HomePage(title: 'LectorCPMD'),
+      home: HomePage(title: 'LectorCPMD', dao: calculoDao),
     );
   }
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.title});
+  const HomePage({super.key, required this.title, required this.dao});
 
   final String title;
+  final CalculoDao dao;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -42,26 +49,37 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Row(
         children: [
-          IconButton(
-            onPressed: () {
-              setState(() {
-                items.add("value");
-              });
-            },
-            icon: const Icon(Icons.add)),
           Expanded(
-            child: ListView.builder(
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(items[index]),
-                  onTap: () {
-                    setState(() {
-                      selectedItemIndex = index;
-                    });
-                  },
-                );
-              },
+            flex: 1,
+            child: Column(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          items.add("value");
+                        });
+                      },
+                      icon: const Icon(Icons.add)),
+                ),
+                Expanded(
+                  flex: 9,
+                  child: ListView.builder(
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(items[index]),
+                        onTap: () {
+                          setState(() {
+                            selectedItemIndex = index;
+                          });
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
           Expanded(
@@ -83,4 +101,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
