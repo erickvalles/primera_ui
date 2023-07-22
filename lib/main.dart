@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:primera_ui/models/calculo.dart';
 import './detail_page.dart';
 import 'util/database.dart';
 import 'dao/calculo_dao.dart';
 
 Future<void> main() async {
-  final database =
-      await $FloorAppDatabase.databaseBuilder("calculos.db").build();
-  final calculoDao = database.calculoDao;
-  runApp(MyApp(calculoDao));
+  //final database = await $FloorAppDatabase.databaseBuilder("calculos.db").build();
+  // final calculoDao = database.calculoDao;
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final CalculoDao calculoDao;
-  const MyApp(this.calculoDao);
+  //final CalculoDao calculoDao;
+  const MyApp();
 
   @override
   Widget build(BuildContext context) {
@@ -22,24 +22,28 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         primarySwatch: Colors.blue,
       ),
-      home: HomePage(title: 'LectorCPMD', dao: calculoDao),
+      home: HomePage(title: 'LectorCPMD'),
     );
   }
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.title, required this.dao});
+  const HomePage({super.key, required this.title});
 
   final String title;
-  final CalculoDao dao;
+  //final CalculoDao dao;
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  final List<String> items = ['Item 1', 'Item 2', 'Item 3'];
-  int selectedItemIndex = -1;
+  final List<Calculo> calculos = [
+    Calculo(1, "Telurio", 32.3, 300, 600, "Te001.cpmd", "/out/"),
+    Calculo(2, "Telurio", 32.3, 300, 600, "Te002.cpmd", "/out/"),
+    Calculo(3, "Telurio", 32.3, 300, 600, "Te003.cpmd", "/out/")
+  ];
+  Calculo? calculoSeleccionado = null;
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +62,8 @@ class _HomePageState extends State<HomePage> {
                   child: IconButton(
                       onPressed: () {
                         setState(() {
-                          items.add("value");
+                          calculos.add(Calculo(5, "Telurio", 32.3, 300, 600,
+                              "Te005.cpmd", "/out/"));
                         });
                       },
                       icon: const Icon(Icons.add)),
@@ -66,13 +71,14 @@ class _HomePageState extends State<HomePage> {
                 Expanded(
                   flex: 9,
                   child: ListView.builder(
-                    itemCount: items.length,
+                    itemCount: calculos.length,
                     itemBuilder: (context, index) {
                       return ListTile(
-                        title: Text(items[index]),
+                        title: Text(calculos[index].nombre!),
+                        subtitle: Text(calculos[index].nombreArchivo!),
                         onTap: () {
                           setState(() {
-                            selectedItemIndex = index;
+                            calculoSeleccionado = calculos[index];
                           });
                         },
                       );
@@ -84,8 +90,8 @@ class _HomePageState extends State<HomePage> {
           ),
           Expanded(
             flex: 2,
-            child: selectedItemIndex != -1
-                ? DetailPage(item: items[selectedItemIndex])
+            child: calculoSeleccionado != null
+                ? DetailPage(calculo: calculoSeleccionado!)
                 : Container(
                     color: Colors.grey,
                     child: const Center(
