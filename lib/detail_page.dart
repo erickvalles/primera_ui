@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:primera_ui/models/calculo.dart';
 
@@ -23,7 +26,23 @@ class _DetailPageState extends State<DetailPage> {
   @override
   void initState() {
     super.initState();
-    _nombreController.text = widget.calculo.nombre!;
+    _updateControllers(widget.calculo);
+  }
+
+  @override
+  void didUpdateWidget(covariant DetailPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.calculo != oldWidget.calculo) {
+      _updateControllers(widget.calculo);
+    }
+  }
+
+  void _updateControllers(Calculo calculo) {
+    _nombreController.text = calculo.nombre!;
+    _boxSizeController.text = calculo.boxSize!.toString();
+    _numeroAtomosController.text = calculo.numeroAtomos!.toString();
+    _nombreArchivoController.text = calculo.nombreArchivo!;
+    _dirSalidaController.text = calculo.dirSalida!;
   }
 
   @override
@@ -37,18 +56,35 @@ class _DetailPageState extends State<DetailPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextFormField(
-                controller: _nombreController,
-                decoration: InputDecoration(labelText: 'Nombre'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, ingrese el nombre';
-                  }
-                  return null;
-                },
+              SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Expanded(flex: 2, child: nombreForm()),
+                  SizedBox(width: 16),
+                  Expanded(flex: 1, child: boxSizeForm()),
+                  SizedBox(width: 16),
+                  Expanded(flex: 1, child: numeroAtomosForm()),
+                ],
               ),
+
               // Agregar TextFormField para las demás propiedades
               // Box Size, Número de átomos, Tamaño del histograma, etc.
+              SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: filePickerForm(),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    flex: 1,
+                    child: directoryPickerForm(),
+                  )
+                ],
+              ),
               SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
@@ -75,6 +111,112 @@ class _DetailPageState extends State<DetailPage> {
           ),
         ),
       ),
+    );
+  }
+
+  void getFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    if (result != null) {
+      File file = File(result.files.single.path!);
+      _nombreArchivoController.text = file.path;
+    }
+  }
+
+  void getFolder() async {
+    String? carpetaSalida = await FilePicker.platform.getDirectoryPath();
+    if (carpetaSalida != null) {
+      _dirSalidaController.text = carpetaSalida;
+    }
+  }
+
+  Widget nombreForm() {
+    return TextFormField(
+      controller: _nombreController,
+      decoration: InputDecoration(labelText: 'Nombre'),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Por favor, ingrese el nombre';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget boxSizeForm() {
+    return TextFormField(
+      controller: _boxSizeController,
+      decoration: InputDecoration(labelText: 'Tamaño de la caja'),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Por favor, ingrese el tamaño de la caja';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget filePickerForm() {
+    return Row(
+      children: [
+        Expanded(
+          flex: 9,
+          child: TextFormField(
+            controller: _nombreArchivoController,
+            readOnly: true,
+            decoration: InputDecoration(
+                labelText: 'Seleccione el archivo',
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.file_open_outlined),
+                  onPressed: () => getFile(),
+                )),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Por favor, seleccione el archivo';
+              }
+              return null;
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget directoryPickerForm() {
+    return Row(
+      children: [
+        Expanded(
+          flex: 9,
+          child: TextFormField(
+            controller: _dirSalidaController,
+            readOnly: true,
+            decoration: InputDecoration(
+                labelText: 'Seleccione el directorio de salida',
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.folder_open_outlined),
+                  onPressed: () => getFolder(),
+                )),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Por favor, seleccione el directorio de salida';
+              }
+              return null;
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget numeroAtomosForm() {
+    return TextFormField(
+      controller: _numeroAtomosController,
+      decoration: InputDecoration(labelText: 'Número de átomos'),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Por favor, ingrese el número de átmos';
+        }
+        return null;
+      },
     );
   }
 }

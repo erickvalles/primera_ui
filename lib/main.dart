@@ -5,14 +5,15 @@ import 'util/database.dart';
 import 'dao/calculo_dao.dart';
 
 Future<void> main() async {
-  //final database = await $FloorAppDatabase.databaseBuilder("calculos.db").build();
-  // final calculoDao = database.calculoDao;
-  runApp(MyApp());
+  final database =
+      await $FloorAppDatabase.databaseBuilder("calculos.db").build();
+  final calculoDao = database.calculoDao;
+  runApp(MyApp(calculoDao));
 }
 
 class MyApp extends StatelessWidget {
-  //final CalculoDao calculoDao;
-  const MyApp();
+  final CalculoDao calculoDao;
+  const MyApp(this.calculoDao);
 
   @override
   Widget build(BuildContext context) {
@@ -22,28 +23,40 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         primarySwatch: Colors.blue,
       ),
-      home: HomePage(title: 'LectorCPMD'),
+      home: HomePage(title: 'LectorCPMD', dao: calculoDao),
     );
   }
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.title});
+  const HomePage({super.key, required this.title, required this.dao});
 
   final String title;
-  //final CalculoDao dao;
-
+  final CalculoDao dao;
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  final List<Calculo> calculos = [
-    Calculo(1, "Telurio", 32.3, 300, 600, "Te001.cpmd", "/out/"),
-    Calculo(2, "Telurio", 32.3, 300, 600, "Te002.cpmd", "/out/"),
-    Calculo(3, "Telurio", 32.3, 300, 600, "Te003.cpmd", "/out/")
-  ];
+  List<Calculo> calculos = [];
   Calculo? calculoSeleccionado = null;
+
+  _HomePageState();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _cargarCalculos();
+  }
+
+  Future<void> _cargarCalculos() async {
+    List<Calculo> listaCalculos = await widget.dao.todosCalculos();
+
+    setState(() {
+      calculos = listaCalculos;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +109,7 @@ class _HomePageState extends State<HomePage> {
                     color: Colors.grey,
                     child: const Center(
                       child: Text(
-                        'No item selected',
+                        'Añada un nuevo cálculo o seleccione uno de la lista',
                         style: TextStyle(fontSize: 18),
                       ),
                     ),
