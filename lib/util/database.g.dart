@@ -85,7 +85,7 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Calculo` (`id` INTEGER NOT NULL, `nombre` TEXT NOT NULL, `boxSize` REAL NOT NULL, `numeroAtomos` INTEGER NOT NULL, `tamHistograma` INTEGER NOT NULL, `nombreArchivo` TEXT NOT NULL, `dirSalida` TEXT NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Calculo` (`id` INTEGER, `nombre` TEXT, `boxSize` REAL, `numeroAtomos` INTEGER, `tamHistograma` INTEGER, `nombreArchivo` TEXT, `dirSalida` TEXT, PRIMARY KEY (`id`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -128,35 +128,36 @@ class _$CalculoDao extends CalculoDao {
 
   @override
   Future<List<Calculo>> todosCalculos() async {
-    return _queryAdapter.queryList('SELECT * FROM Calculo',
+    return _queryAdapter.queryList('SELECT * FROM Calculo order by id desc',
         mapper: (Map<String, Object?> row) => Calculo(
-            row['id'] as int,
-            row['nombre'] as String,
-            row['boxSize'] as double,
-            row['numeroAtomos'] as int,
-            row['tamHistograma'] as int,
-            row['nombreArchivo'] as String,
-            row['dirSalida'] as String));
+            row['id'] as int?,
+            row['nombre'] as String?,
+            row['boxSize'] as double?,
+            row['numeroAtomos'] as int?,
+            row['tamHistograma'] as int?,
+            row['nombreArchivo'] as String?,
+            row['dirSalida'] as String?));
   }
 
   @override
   Stream<Calculo?> buscarCalculoPorId(int id) {
     return _queryAdapter.queryStream('SELECT * FROM Calculo WHERE id = ?1',
         mapper: (Map<String, Object?> row) => Calculo(
-            row['id'] as int,
-            row['nombre'] as String,
-            row['boxSize'] as double,
-            row['numeroAtomos'] as int,
-            row['tamHistograma'] as int,
-            row['nombreArchivo'] as String,
-            row['dirSalida'] as String),
+            row['id'] as int?,
+            row['nombre'] as String?,
+            row['boxSize'] as double?,
+            row['numeroAtomos'] as int?,
+            row['tamHistograma'] as int?,
+            row['nombreArchivo'] as String?,
+            row['dirSalida'] as String?),
         arguments: [id],
         queryableName: 'Calculo',
         isView: false);
   }
 
   @override
-  Future<void> insertarCalculo(Calculo calculo) async {
-    await _calculoInsertionAdapter.insert(calculo, OnConflictStrategy.abort);
+  Future<int> insertarCalculo(Calculo calculo) {
+    return _calculoInsertionAdapter.insertAndReturnId(
+        calculo, OnConflictStrategy.abort);
   }
 }

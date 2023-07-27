@@ -50,6 +50,12 @@ class _HomePageState extends State<HomePage> {
     _cargarCalculos();
   }
 
+  void agregarCalculo(Calculo nuevoCalculo) {
+    setState(() {
+      calculos.add(nuevoCalculo);
+    });
+  }
+
   Future<void> _cargarCalculos() async {
     List<Calculo> listaCalculos = await widget.dao.todosCalculos();
 
@@ -69,17 +75,26 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             flex: 1,
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Expanded(
                   flex: 1,
-                  child: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          calculos.add(Calculo(5, "Telurio", 32.3, 300, 600,
-                              "Te005.cpmd", "/out/"));
-                        });
-                      },
-                      icon: const Icon(Icons.add)),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            calculoSeleccionado =
+                                Calculo(0, "", 0, 0, 0, "", "");
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5.0))),
+                        child: const Icon(Icons.add)),
+                  ),
                 ),
                 Expanded(
                   flex: 9,
@@ -104,7 +119,11 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             flex: 2,
             child: calculoSeleccionado != null
-                ? DetailPage(calculo: calculoSeleccionado!)
+                ? DetailPage(
+                    calculo: calculoSeleccionado!,
+                    dao: widget.dao,
+                    agregarCalculo: agregarCalculo,
+                  )
                 : Container(
                     color: Colors.grey,
                     child: const Center(
