@@ -85,7 +85,7 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Calculo` (`id` INTEGER, `nombre` TEXT, `boxSize` REAL, `numeroAtomos` INTEGER, `tamHistograma` INTEGER, `nombreArchivo` TEXT, `dirSalida` TEXT, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Calculo` (`id` INTEGER, `nombre` TEXT, `boxSize` REAL, `numeroAtomos` INTEGER, `tamHistograma` INTEGER, `nombreArchivo` TEXT, `dirSalida` TEXT, `salidaGdr` TEXT, `salidaCoord` TEXT, `salidaSk` TEXT, `salidaAngulos` TEXT, PRIMARY KEY (`id`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -114,7 +114,47 @@ class _$CalculoDao extends CalculoDao {
                   'numeroAtomos': item.numeroAtomos,
                   'tamHistograma': item.tamHistograma,
                   'nombreArchivo': item.nombreArchivo,
-                  'dirSalida': item.dirSalida
+                  'dirSalida': item.dirSalida,
+                  'salidaGdr': item.salidaGdr,
+                  'salidaCoord': item.salidaCoord,
+                  'salidaSk': item.salidaSk,
+                  'salidaAngulos': item.salidaAngulos
+                },
+            changeListener),
+        _calculoUpdateAdapter = UpdateAdapter(
+            database,
+            'Calculo',
+            ['id'],
+            (Calculo item) => <String, Object?>{
+                  'id': item.id,
+                  'nombre': item.nombre,
+                  'boxSize': item.boxSize,
+                  'numeroAtomos': item.numeroAtomos,
+                  'tamHistograma': item.tamHistograma,
+                  'nombreArchivo': item.nombreArchivo,
+                  'dirSalida': item.dirSalida,
+                  'salidaGdr': item.salidaGdr,
+                  'salidaCoord': item.salidaCoord,
+                  'salidaSk': item.salidaSk,
+                  'salidaAngulos': item.salidaAngulos
+                },
+            changeListener),
+        _calculoDeletionAdapter = DeletionAdapter(
+            database,
+            'Calculo',
+            ['id'],
+            (Calculo item) => <String, Object?>{
+                  'id': item.id,
+                  'nombre': item.nombre,
+                  'boxSize': item.boxSize,
+                  'numeroAtomos': item.numeroAtomos,
+                  'tamHistograma': item.tamHistograma,
+                  'nombreArchivo': item.nombreArchivo,
+                  'dirSalida': item.dirSalida,
+                  'salidaGdr': item.salidaGdr,
+                  'salidaCoord': item.salidaCoord,
+                  'salidaSk': item.salidaSk,
+                  'salidaAngulos': item.salidaAngulos
                 },
             changeListener);
 
@@ -126,6 +166,10 @@ class _$CalculoDao extends CalculoDao {
 
   final InsertionAdapter<Calculo> _calculoInsertionAdapter;
 
+  final UpdateAdapter<Calculo> _calculoUpdateAdapter;
+
+  final DeletionAdapter<Calculo> _calculoDeletionAdapter;
+
   @override
   Future<List<Calculo>> todosCalculos() async {
     return _queryAdapter.queryList('SELECT * FROM Calculo order by id desc',
@@ -136,7 +180,11 @@ class _$CalculoDao extends CalculoDao {
             row['numeroAtomos'] as int?,
             row['tamHistograma'] as int?,
             row['nombreArchivo'] as String?,
-            row['dirSalida'] as String?));
+            row['dirSalida'] as String?,
+            row['salidaGdr'] as String?,
+            row['salidaCoord'] as String?,
+            row['salidaSk'] as String?,
+            row['salidaAngulos'] as String?));
   }
 
   @override
@@ -149,15 +197,35 @@ class _$CalculoDao extends CalculoDao {
             row['numeroAtomos'] as int?,
             row['tamHistograma'] as int?,
             row['nombreArchivo'] as String?,
-            row['dirSalida'] as String?),
+            row['dirSalida'] as String?,
+            row['salidaGdr'] as String?,
+            row['salidaCoord'] as String?,
+            row['salidaSk'] as String?,
+            row['salidaAngulos'] as String?),
         arguments: [id],
         queryableName: 'Calculo',
         isView: false);
   }
 
   @override
+  Future<void> deleteAllCalculos() async {
+    await _queryAdapter.queryNoReturn('DELETE FROM Calculo');
+  }
+
+  @override
   Future<int> insertarCalculo(Calculo calculo) {
     return _calculoInsertionAdapter.insertAndReturnId(
         calculo, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<int> actualizaCalculo(Calculo calculo) {
+    return _calculoUpdateAdapter.updateAndReturnChangedRows(
+        calculo, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<int> borrarCalculo(Calculo calculo) {
+    return _calculoDeletionAdapter.deleteAndReturnChangedRows(calculo);
   }
 }

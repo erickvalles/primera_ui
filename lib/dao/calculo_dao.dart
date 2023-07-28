@@ -12,4 +12,13 @@ abstract class CalculoDao {
 
   @insert
   Future<int> insertarCalculo(Calculo calculo);
+
+  @update
+  Future<int> actualizaCalculo(Calculo calculo);
+
+  @delete
+  Future<int> borrarCalculo(Calculo calculo);
+
+  @Query("DELETE FROM Calculo")
+  Future<void> deleteAllCalculos();
 }

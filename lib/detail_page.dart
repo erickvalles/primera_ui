@@ -11,12 +11,18 @@ class DetailPage extends StatefulWidget {
   final Calculo calculo;
   final CalculoDao dao;
   final Function(Calculo) agregarCalculo;
+  final Function() actualizarLista;
+  final Function() calculoEliminado;
+  final bool nuevoCalculo;
 
   const DetailPage(
       {super.key,
       required this.calculo,
       required this.dao,
-      required this.agregarCalculo});
+      required this.agregarCalculo,
+      required this.nuevoCalculo,
+      required this.actualizarLista,
+      required this.calculoEliminado});
 
   @override
   State<DetailPage> createState() => _DetailPageState();
@@ -34,6 +40,7 @@ class _DetailPageState extends State<DetailPage> {
   final _gofrFileController = TextEditingController();
   final _coordFileController = TextEditingController();
   final _skFileController = TextEditingController();
+  final _angulosFileController = TextEditingController();
   final _outputTextController = TextEditingController();
 
   @override
@@ -57,6 +64,10 @@ class _DetailPageState extends State<DetailPage> {
     _nombreArchivoController.text = calculo.nombreArchivo!;
     _dirSalidaController.text = calculo.dirSalida!;
     _tamHistogramaController.text = calculo.tamHistograma!.toString();
+    _gofrFileController.text = calculo.salidaGdr!.toString();
+    _coordFileController.text = calculo.salidaCoord!.toString();
+    _skFileController.text = calculo.salidaSk!.toString();
+    _angulosFileController.text = calculo.salidaAngulos!.toString();
   }
 
   @override
@@ -117,7 +128,7 @@ class _DetailPageState extends State<DetailPage> {
                           runGofRForm(),
                           runCoordForm(),
                           runSkForm(),
-                          runSkForm(),
+                          runAngulosForm(),
                         ],
                       ),
                     ),
@@ -150,41 +161,82 @@ class _DetailPageState extends State<DetailPage> {
               Row(
                 children: [
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         // Crear una instancia de Calculo con los valores del formulario
                         Calculo nuevoCalculo = Calculo(
-                          null, // El id podría ser generado automáticamente o asignado según tus necesidades
-                          _nombreController.text,
-                          double.tryParse(_boxSizeController.text),
-                          int.tryParse(_numeroAtomosController.text),
-                          int.tryParse(_tamHistogramaController.text),
-                          _nombreArchivoController.text,
-                          _dirSalidaController.text,
-                        );
+                            null, // El id podría ser generado automáticamente o asignado según tus necesidades
+                            _nombreController.text,
+                            double.tryParse(_boxSizeController.text),
+                            int.tryParse(_numeroAtomosController.text),
+                            int.tryParse(_tamHistogramaController.text),
+                            _nombreArchivoController.text,
+                            _dirSalidaController.text,
+                            _gofrFileController.text,
+                            _coordFileController.text,
+                            _skFileController.text,
+                            _angulosFileController.text);
 
                         // Hacer lo que necesites con la nueva instancia de Calculo
                         // Por ejemplo, guardar en una base de datos, enviar a un servidor, etc.
-                        widget.dao.insertarCalculo(nuevoCalculo);
+                        int id = await _insertarCalculo(nuevoCalculo);
+                        nuevoCalculo.id = id;
                         widget.agregarCalculo(nuevoCalculo);
+                        widget.calculo.id = nuevoCalculo.id;
+                        final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+                        scaffoldMessenger.showSnackBar(const SnackBar(
+                          content: Text("Nuevo cálculo creado!"),
+                          duration: Duration(seconds: 3),
+                        ));
                         print(
                             'Nuevo cálculo creado con el id: ${nuevoCalculo.toString()}');
                       }
                     },
-                    child: Text('Guardar'),
+                    child: widget.nuevoCalculo
+                        ? Text('Guardar')
+                        : Text("Duplicar"),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 16,
                   ),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _actualizaCalculo(widget.calculo);
+
+                      final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+                      scaffoldMessenger.showSnackBar(SnackBar(
+                        content: Text("Cálculo actualizado"),
+                        duration: Duration(seconds: 3),
+                      ));
+                      //widget.dao.actualizaCalculo();
+                    },
                     child: Text("Actualizar"),
                     style: ButtonStyle(
                         backgroundColor:
                             MaterialStateProperty.all<Color>(Colors.green),
                         foregroundColor:
                             MaterialStateProperty.all<Color>(Colors.white)),
-                  )
+                  ),
+                  SizedBox(
+                    width: 16,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      widget.dao.borrarCalculo(widget.calculo);
+                      widget.actualizarLista();
+                    },
+                    child: Text("Eliminar"),
+                    style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all<Color>(Colors.red),
+                        foregroundColor:
+                            MaterialStateProperty.all<Color>(Colors.white)),
+                  ),
+                  SizedBox(
+                    width: 16,
+                  ),
                 ],
               ),
             ],
@@ -242,7 +294,7 @@ class _DetailPageState extends State<DetailPage> {
           labelText: 'Output',
           border: OutlineInputBorder(),
           suffixIcon: IconButton(
-            icon: Icon(Icons.clear),
+            icon: Icon(Icons.delete),
             onPressed: () => _outputTextController.text = "",
           ),
           suffixIconColor: Colors.red),
@@ -419,6 +471,45 @@ class _DetailPageState extends State<DetailPage> {
     );
   }
 
+  Widget runAngulosForm() {
+    return Row(
+      children: [
+        Expanded(
+          flex: 9,
+          child: TextFormField(
+            controller: _angulosFileController,
+            readOnly: true,
+            decoration: InputDecoration(
+                labelText: 'Calcular la distribución de ángulos',
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.play_arrow),
+                      onPressed: () {
+                        _runAngulos();
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.show_chart),
+                      onPressed: () {
+                        _runGnuPlot(4);
+                      },
+                    ),
+                  ],
+                )),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Por favor, seleccione el archivo';
+              }
+              return null;
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   void _rungOfR() async {
     try {
       final result = await Process.run("/home/erick/code/lector-cpmd/gdr", [
@@ -439,6 +530,29 @@ class _DetailPageState extends State<DetailPage> {
       _gofrFileController.text = partes[7].split(":")[1];
       _coordFileController.text = partes[8].split(":")[1];
       _skFileController.text = partes[12].split(":")[1];
+    } catch (e) {
+      print("Error $e");
+    }
+  }
+
+  void _runAngulos() async {
+    try {
+      final result = await Process.run("/home/erick/code/lector-cpmd/angulos", [
+        _boxSizeController.text,
+        _numeroAtomosController.text,
+        _tamHistogramaController.text,
+        _nombreArchivoController.text,
+        _dirSalidaController.text,
+        "1"
+      ]);
+      print("Comenzó la ejecución:");
+      print("Exit code: ${result.exitCode}");
+      print("Salida estándar: ${result.stdout}");
+      print("Error: ${result.stderr}");
+      _outputTextController.text = result.stdout;
+
+      List<String> partes = _outputTextController.text.split("\n");
+      _angulosFileController.text = partes[4].split(":")[1];
     } catch (e) {
       print("Error $e");
     }
@@ -502,6 +616,9 @@ class _DetailPageState extends State<DetailPage> {
       case 3:
         result = "plot \"${_skFileController.text}\" using 3:4 with lines";
         break;
+      case 4:
+        result = "plot \"${_angulosFileController.text}\" using 1:2 with lines";
+        break;
       default:
         result = "plot \"${_gofrFileController.text}\" using 2:3 with lines";
         break;
@@ -529,5 +646,25 @@ class _DetailPageState extends State<DetailPage> {
 
   static void _openFileExplorer(String path) {
     OpenFile.open(path);
+  }
+
+  void _actualizaCalculo(Calculo calculo) {
+    calculo.nombre = _nombreController.text;
+    calculo.boxSize = double.tryParse(_boxSizeController.text);
+    calculo.numeroAtomos = int.tryParse(_numeroAtomosController.text);
+    calculo.tamHistograma = int.tryParse(_tamHistogramaController.text);
+    calculo.nombreArchivo = _nombreArchivoController.text;
+    calculo.dirSalida = _dirSalidaController.text;
+    calculo.salidaGdr = _gofrFileController.text;
+    calculo.salidaCoord = _coordFileController.text;
+    calculo.salidaSk = _skFileController.text;
+    calculo.salidaAngulos = _angulosFileController.text;
+
+    widget.dao.actualizaCalculo(calculo);
+  }
+
+  Future<int> _insertarCalculo(Calculo nuevoCalculo) async {
+    int idInsertado = await widget.dao.insertarCalculo(nuevoCalculo);
+    return idInsertado;
   }
 }

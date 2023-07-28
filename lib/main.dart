@@ -40,6 +40,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<Calculo> calculos = [];
   Calculo? calculoSeleccionado = null;
+  bool nuevo = true;
 
   _HomePageState();
 
@@ -53,6 +54,12 @@ class _HomePageState extends State<HomePage> {
   void agregarCalculo(Calculo nuevoCalculo) {
     setState(() {
       calculos.add(nuevoCalculo);
+    });
+  }
+
+  void calculoEliminado() {
+    setState(() {
+      calculoSeleccionado = null;
     });
   }
 
@@ -86,7 +93,8 @@ class _HomePageState extends State<HomePage> {
                         onPressed: () {
                           setState(() {
                             calculoSeleccionado =
-                                Calculo(0, "", 0, 0, 0, "", "");
+                                Calculo(0, "", 0, 0, 0, "", "", "", "", "", "");
+                            nuevo = true;
                           });
                         },
                         style: ElevatedButton.styleFrom(
@@ -107,6 +115,7 @@ class _HomePageState extends State<HomePage> {
                         onTap: () {
                           setState(() {
                             calculoSeleccionado = calculos[index];
+                            nuevo = false;
                           });
                         },
                       );
@@ -123,6 +132,9 @@ class _HomePageState extends State<HomePage> {
                     calculo: calculoSeleccionado!,
                     dao: widget.dao,
                     agregarCalculo: agregarCalculo,
+                    nuevoCalculo: nuevo,
+                    actualizarLista: _cargarCalculos,
+                    calculoEliminado: calculoEliminado,
                   )
                 : Container(
                     color: Colors.grey,
