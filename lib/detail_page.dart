@@ -512,7 +512,8 @@ class _DetailPageState extends State<DetailPage> {
 
   void _rungOfR() async {
     try {
-      final result = await Process.run("/home/erick/code/lector-cpmd/gdr", [
+      final result =
+          await Process.run("/home/erick/code/lector-cpmd/build/gdr", [
         _boxSizeController.text,
         _numeroAtomosController.text,
         _tamHistogramaController.text,
@@ -529,7 +530,7 @@ class _DetailPageState extends State<DetailPage> {
       List<String> partes = _outputTextController.text.split("\n");
       _gofrFileController.text = partes[7].split(":")[1];
       _coordFileController.text = partes[8].split(":")[1];
-      _skFileController.text = partes[12].split(":")[1];
+      _skFileController.text = partes[11].split(":")[1];
     } catch (e) {
       print("Error $e");
     }
@@ -537,7 +538,8 @@ class _DetailPageState extends State<DetailPage> {
 
   void _runAngulos() async {
     try {
-      final result = await Process.run("/home/erick/code/lector-cpmd/angulos", [
+      final result =
+          await Process.run("/home/erick/code/lector-cpmd/build/angulos", [
         _boxSizeController.text,
         _numeroAtomosController.text,
         _tamHistogramaController.text,
@@ -611,10 +613,12 @@ class _DetailPageState extends State<DetailPage> {
         result = "plot \"${_gofrFileController.text}\" using 2:3 with lines";
         break;
       case 2:
-        result = "plot \"${_coordFileController.text}\" using 1:2 with lines";
+        result =
+            " set xrange[2.1:3.9]; plot \"${_coordFileController.text}\" using 1:2 with lines";
         break;
       case 3:
-        result = "plot \"${_skFileController.text}\" using 3:4 with lines";
+        result =
+            " set xrange[0:16]; plot \"${_skFileController.text}\" using 2:6 with lines;";
         break;
       case 4:
         result = "plot \"${_angulosFileController.text}\" using 1:2 with lines";
