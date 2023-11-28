@@ -92,6 +92,22 @@ class _DetailPageState extends State<DetailPage> {
                   Expanded(flex: 1, child: numeroAtomosForm()),
                   SizedBox(width: 16),
                   Expanded(flex: 1, child: tamHistogramaForm()),
+                  SizedBox(
+                    width: 16,
+                  ),
+                  Expanded(
+                      flex: 1,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _abrirContenedora();
+                        },
+                        child: Text("Abrir"),
+                        style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStateProperty.all<Color>(Colors.blue),
+                            foregroundColor:
+                                MaterialStateProperty.all<Color>(Colors.white)),
+                      ))
                 ],
               ),
 
