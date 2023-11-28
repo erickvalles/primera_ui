@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:primera_ui/dao/calculo_dao.dart';
-import 'package:primera_ui/models/calculo.dart';
+import 'package:lector_cpmd/dao/calculo_dao.dart';
+import 'package:lector_cpmd/models/calculo.dart';
 import 'package:open_file/open_file.dart';
 import 'package:flutter_isolate/flutter_isolate.dart';
 

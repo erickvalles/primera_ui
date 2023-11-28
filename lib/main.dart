@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:primera_ui/models/calculo.dart';
+import 'package:lector_cpmd/models/calculo.dart';
 import './detail_page.dart';
 import 'util/database.dart';
 import 'dao/calculo_dao.dart';
