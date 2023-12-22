@@ -721,6 +721,7 @@ class _DetailPageState extends State<DetailPage> {
   }
 
   void _runVAC() async {
+    Loader.show(context, progressIndicator: CircularProgressIndicator());
     try {
       final result = await Process.run("/home/erick/code/dinamicas/vac", [
         _espacioController.text,
@@ -737,6 +738,7 @@ class _DetailPageState extends State<DetailPage> {
       print("Error: ${result.stderr}");
       _outputTextController.text = result.stdout;
 
+      Loader.hide();
       List<String> partes = _outputTextController.text.split("\n");
       _gofrFileController.text = partes[7].split(":")[1];
       _coordFileController.text = partes[8].split(":")[1];
@@ -747,6 +749,7 @@ class _DetailPageState extends State<DetailPage> {
   }
 
   void _runAngulos() async {
+    Loader.show(context, progressIndicator: LinearProgressIndicator());
     try {
       final result = await Process.run("/home/erick/code/lector-cpmd/angulos", [
         _boxSizeController.text,
@@ -756,6 +759,7 @@ class _DetailPageState extends State<DetailPage> {
         _dirSalidaController.text,
         "1"
       ]);
+      Loader.hide();
       print("Comenzó la ejecución:");
       print("Exit code: ${result.exitCode}");
       print("Salida estándar: ${result.stdout}");
