@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 import 'package:lector_cpmd/dao/calculo_dao.dart';
 import 'package:lector_cpmd/models/calculo.dart';
 import 'package:open_file/open_file.dart';
@@ -44,6 +45,11 @@ class _DetailPageState extends State<DetailPage> {
   final _angulosFileController = TextEditingController();
   final _outputTextController = TextEditingController();
   final _otroTextController = TextEditingController();
+  final _espacioController = TextEditingController();
+  final _trayectoriasMargenController = TextEditingController();
+  final _tiempoIntegracionController = TextEditingController();
+  final _MSDController = TextEditingController();
+  final _VACController = TextEditingController();
 
   @override
   void initState() {
@@ -146,8 +152,8 @@ class _DetailPageState extends State<DetailPage> {
                         children: [
                           labelPropiedades("Propiedades dinámicas",
                               config: true),
-                          runGofRForm(),
-                          runCoordForm(),
+                          runMSDForm(),
+                          runVACForm(),
                           SizedBox(
                             height: 112,
                           ),
@@ -267,22 +273,27 @@ class _DetailPageState extends State<DetailPage> {
                   child: Column(
                 children: [
                   TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: 'Espacio entre trayectorias',
-                    ),
-                    controller: _otroTextController,
-                  ),
+                      decoration: const InputDecoration(
+                        labelText: 'Espacio entre trayectorias',
+                      ),
+                      controller: _espacioController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, ingrese el espacio entre trayectorias';
+                        }
+                        return null;
+                      }),
                   TextFormField(
                     decoration: const InputDecoration(
                       labelText: 'Trayectorias margen',
                     ),
-                    controller: _otroTextController,
+                    controller: _trayectoriasMargenController,
                   ),
                   TextFormField(
                     decoration: const InputDecoration(
                       labelText: 'Tiempo de integración',
                     ),
-                    controller: _otroTextController,
+                    controller: _tiempoIntegracionController,
                   )
                 ],
               )),
@@ -296,7 +307,7 @@ class _DetailPageState extends State<DetailPage> {
                   child: Text("Cancelar")),
               TextButton(
                   onPressed: () {
-                    _abrirContenedora();
+                    //_abrirContenedora();
                     Navigator.of(context).pop();
                   },
                   child: Text("Aceptar"))
@@ -587,6 +598,138 @@ class _DetailPageState extends State<DetailPage> {
         _nombreArchivoController.text,
         _dirSalidaController.text,
         "1"
+      ]);
+      print("Comenzó la ejecución:");
+      print("Exit code: ${result.exitCode}");
+      print("Salida estándar: ${result.stdout}");
+      print("Error: ${result.stderr}");
+      _outputTextController.text = result.stdout;
+
+      List<String> partes = _outputTextController.text.split("\n");
+      _gofrFileController.text = partes[7].split(":")[1];
+      _coordFileController.text = partes[8].split(":")[1];
+      _skFileController.text = partes[11].split(":")[1];
+    } catch (e) {
+      print("Error $e");
+    }
+  }
+
+  Widget runMSDForm() {
+    return Row(
+      children: [
+        Expanded(
+          flex: 9,
+          child: TextFormField(
+            controller: _MSDController,
+            readOnly: true,
+            decoration: InputDecoration(
+                labelText: 'Calcular el desplazamiento cuadrático medio MSD',
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.play_arrow),
+                      onPressed: () {
+                        _runMSD();
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.show_chart),
+                      onPressed: () {
+                        _runGnuPlot(2);
+                      },
+                    ),
+                  ],
+                )),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Por favor, seleccione el archivo';
+              }
+              return null;
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget runVACForm() {
+    return Row(
+      children: [
+        Expanded(
+          flex: 9,
+          child: TextFormField(
+            controller: _VACController,
+            readOnly: true,
+            decoration: InputDecoration(
+                labelText: 'Calcular la correlación de velocidades VAC',
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.play_arrow),
+                      onPressed: () {
+                        _runVAC();
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.show_chart),
+                      onPressed: () {
+                        _runGnuPlot(2);
+                      },
+                    ),
+                  ],
+                )),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Por favor, seleccione el archivo';
+              }
+              return null;
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _runMSD() async {
+    Loader.show(context, progressIndicator: LinearProgressIndicator());
+    try {
+      final result = await Process.run("/home/erick/code/dinamicas/msd", [
+        _espacioController.text,
+        _numeroAtomosController.text,
+        _trayectoriasMargenController.text,
+        _nombreArchivoController.text,
+        _dirSalidaController.text,
+        "1",
+        _tiempoIntegracionController.text
+      ]);
+      Loader.hide();
+      print("Comenzó la ejecución:");
+      print("Exit code: ${result.exitCode}");
+      print("Salida estándar: ${result.stdout}");
+      print("Error: ${result.stderr}");
+      _outputTextController.text = result.stdout;
+
+      List<String> partes = _outputTextController.text.split("\n");
+      _gofrFileController.text = partes[7].split(":")[1];
+      _coordFileController.text = partes[8].split(":")[1];
+      _skFileController.text = partes[11].split(":")[1];
+    } catch (e) {
+      print("Error $e");
+    }
+  }
+
+  void _runVAC() async {
+    try {
+      final result = await Process.run("/home/erick/code/dinamicas/vac", [
+        _espacioController.text,
+        _numeroAtomosController.text,
+        _trayectoriasMargenController.text,
+        _nombreArchivoController.text,
+        _dirSalidaController.text,
+        "1",
+        _tiempoIntegracionController.text
       ]);
       print("Comenzó la ejecución:");
       print("Exit code: ${result.exitCode}");
