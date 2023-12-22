@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -42,6 +43,7 @@ class _DetailPageState extends State<DetailPage> {
   final _skFileController = TextEditingController();
   final _angulosFileController = TextEditingController();
   final _outputTextController = TextEditingController();
+  final _otroTextController = TextEditingController();
 
   @override
   void initState() {
@@ -95,19 +97,6 @@ class _DetailPageState extends State<DetailPage> {
                   SizedBox(
                     width: 16,
                   ),
-                  Expanded(
-                      flex: 1,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          _abrirContenedora();
-                        },
-                        child: Text("Abrir"),
-                        style: ButtonStyle(
-                            backgroundColor:
-                                MaterialStateProperty.all<Color>(Colors.blue),
-                            foregroundColor:
-                                MaterialStateProperty.all<Color>(Colors.white)),
-                      ))
                 ],
               ),
 
@@ -155,9 +144,13 @@ class _DetailPageState extends State<DetailPage> {
                       flex: 1,
                       child: Column(
                         children: [
-                          labelPropiedades("Propiedades dinámicas"),
+                          labelPropiedades("Propiedades dinámicas",
+                              config: true),
                           runGofRForm(),
                           runCoordForm(),
+                          SizedBox(
+                            height: 112,
+                          ),
                         ],
                       ),
                     )
@@ -262,13 +255,71 @@ class _DetailPageState extends State<DetailPage> {
     );
   }
 
-  Widget labelPropiedades(String etiqueta) {
+  void _dialogoConfig(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Configurar propiedades dinámicas"),
+            content: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Form(
+                  child: Column(
+                children: [
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'Espacio entre trayectorias',
+                    ),
+                    controller: _otroTextController,
+                  ),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'Trayectorias margen',
+                    ),
+                    controller: _otroTextController,
+                  ),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'Tiempo de integración',
+                    ),
+                    controller: _otroTextController,
+                  )
+                ],
+              )),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    print(_otroTextController.text);
+                  },
+                  child: Text("Cancelar")),
+              TextButton(
+                  onPressed: () {
+                    _abrirContenedora();
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("Aceptar"))
+            ],
+          );
+        });
+  }
+
+  Widget labelPropiedades(String etiqueta, {bool config = false}) {
     return Row(
       children: [
         Text(
           etiqueta,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
+        if (config)
+          Container(
+            child: IconButton(
+                onPressed: () {
+                  _dialogoConfig(context);
+                },
+                icon: const Icon(Icons.settings)),
+          ),
       ],
     );
   }
@@ -554,8 +605,7 @@ class _DetailPageState extends State<DetailPage> {
 
   void _runAngulos() async {
     try {
-      final result =
-          await Process.run("/home/erick/code/lector-cpmd/build/angulos", [
+      final result = await Process.run("/home/erick/code/lector-cpmd/angulos", [
         _boxSizeController.text,
         _numeroAtomosController.text,
         _tamHistogramaController.text,
