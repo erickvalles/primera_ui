@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -50,6 +49,7 @@ class _DetailPageState extends State<DetailPage> {
   final _tiempoIntegracionController = TextEditingController();
   final _MSDController = TextEditingController();
   final _VACController = TextEditingController();
+  final _DiffConstantController = TextEditingController();
 
   @override
   void initState() {
@@ -153,6 +153,7 @@ class _DetailPageState extends State<DetailPage> {
                           labelPropiedades("Propiedades dinámicas",
                               config: true),
                           runMSDForm(),
+                          DiffConstantForm(),
                           runVACForm(),
                           SizedBox(
                             height: 112,
@@ -549,6 +550,31 @@ class _DetailPageState extends State<DetailPage> {
     );
   }
 
+  Widget DiffConstantForm() {
+    return Row(
+      children: [
+        Expanded(
+          flex: 9,
+          child: TextFormField(
+            controller: _DiffConstantController,
+            readOnly: true,
+            decoration: const InputDecoration(
+                labelText: 'Constante de difusión D(t)',
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                )),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Por favor, seleccione el archivo';
+              }
+              return null;
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget runAngulosForm() {
     return Row(
       children: [
@@ -638,7 +664,7 @@ class _DetailPageState extends State<DetailPage> {
                     IconButton(
                       icon: Icon(Icons.show_chart),
                       onPressed: () {
-                        _runGnuPlot(2);
+                        _runGnuPlot(5);
                       },
                     ),
                   ],
@@ -677,7 +703,7 @@ class _DetailPageState extends State<DetailPage> {
                     IconButton(
                       icon: Icon(Icons.show_chart),
                       onPressed: () {
-                        _runGnuPlot(2);
+                        _runGnuPlot(6);
                       },
                     ),
                   ],
@@ -714,9 +740,8 @@ class _DetailPageState extends State<DetailPage> {
       _outputTextController.text = result.stdout;
 
       List<String> partes = _outputTextController.text.split("\n");
-      _gofrFileController.text = partes[7].split(":")[1];
-      _coordFileController.text = partes[8].split(":")[1];
-      _skFileController.text = partes[11].split(":")[1];
+      _MSDController.text = partes[4].split(":")[1].trim();
+      _DiffConstantController.text = partes[3].split(":")[1].trim();
     } catch (e) {
       print("Error $e");
     }
@@ -742,9 +767,7 @@ class _DetailPageState extends State<DetailPage> {
 
       Loader.hide();
       List<String> partes = _outputTextController.text.split("\n");
-      _gofrFileController.text = partes[7].split(":")[1];
-      _coordFileController.text = partes[8].split(":")[1];
-      _skFileController.text = partes[11].split(":")[1];
+      _VACController.text = partes[6].split(":")[1].trim();
     } catch (e) {
       print("Error $e");
     }
@@ -837,6 +860,12 @@ class _DetailPageState extends State<DetailPage> {
         break;
       case 4:
         result = "plot \"${_angulosFileController.text}\" using 1:2 with lines";
+        break;
+      case 5:
+        result = "plot \"${_MSDController.text}\" using 1:2 with lines";
+        break;
+      case 6:
+        result = "plot \"${_VACController.text}\" using 1:4 with lines";
         break;
       default:
         result = "plot \"${_gofrFileController.text}\" using 2:3 with lines";
